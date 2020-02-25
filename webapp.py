@@ -76,10 +76,6 @@ def renderPage1():
         user_data_pprint = '';
     return render_template('page1.html',dump_user_data=user_data_pprint)
 
-@app.route('/page2')
-def renderPage2():
-    return render_template('page2.html')
-
 @github.tokengetter
 def get_github_oauth_token():
     return session['github_token']
