@@ -37,16 +37,20 @@ def inject_logged_in():
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    if 'user_data' in session:
+        user_data_pprint = pprint.pformat(session['user_data']['location'])#format the user data nicely
+    else:
+        user_data_pprint = ''
+    return render_template('home.html',dump_user_data=user_data_pprint)
 
 @app.route('/login')
-def login():   
+def login():
     return github.authorize(callback=url_for('authorized', _external=True, _scheme='http'))#set this back https
 
 @app.route('/logout')
 def logout():
     session.clear()
-    return render_template('message.html', message='You were logged out')
+    return render_template('home.html', message='You were logged out')
 
 @app.route('/login/authorized')#the route should match the callback URL registered with the OAuth provider
 def authorized():
@@ -65,17 +69,8 @@ def authorized():
             session.clear()
             print(inst)
             message = "Unable to log in. Please try again."
-    return render_template('message.html', message=message)
-
-
-@app.route('/page1')
-def renderPage1():
-    if 'user_data' in session:
-        user_data_pprint = pprint.pformat(session['user_data'])#format the user data nicely
-    else:
-        user_data_pprint = '';
-    return render_template('page1.html',dump_user_data=user_data_pprint)
-
+    return render_template('home.html', message=message)
+    
 @github.tokengetter
 def get_github_oauth_token():
     return session['github_token']
