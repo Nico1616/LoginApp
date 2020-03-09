@@ -37,11 +37,7 @@ def inject_logged_in():
 
 @app.route('/')
 def home():
-    if 'user_data' in session:
-        user_data_pprint = pprint.pformat(session['user_data']['location'])#format the user data nicely
-    else:
-        user_data_pprint = ''
-    return render_template('home.html',dump_user_data=user_data_pprint)
+    return render_template('home.html')
 
 @app.route('/login')
 def login():
@@ -63,12 +59,14 @@ def authorized():
             #save user data and set log in message
             session['github_token'] = (resp['access_token'], '')
             session['user_data'] = github.get('user').data
-            message = "You were successfully logged in as " + session['user_data']['login'] + '.'
+            secret = "Secret message"
+            return render_template('secret.html', secret = secret)
         except Exception as inst:
             #clear the session and give error message
             session.clear()
             print(inst)
             message = "Unable to log in. Please try again."
+            secret = ''
     return render_template('home.html', message=message)
     
 @github.tokengetter
