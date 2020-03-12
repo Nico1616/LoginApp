@@ -12,11 +12,6 @@ app.debug = True #Change this to False for production
 app.secret_key = os.environ['SECRET_KEY']
 oauth = OAuth(app)
 
-#delete this when running heroku
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-#https://spewds-oauth.herokuapp.com/ (homepage URL)use this when done with running locally
-#https://spewds-oauth.herokuapp.com/login/authorized (authorized callback)
-
 #set up Github as the OAuth Provider
 github = oauth.remote_app(
     'github',
@@ -37,11 +32,15 @@ def inject_logged_in():
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    if 'user_data' in session and session['user_data']['location'] == 'Santa Barbara':
+        secret = 'This is my secret.'
+    else:
+        secret = 'You need to live in Santa Barbara to see my secret.'
+    return render_template('home.html', secret=secret)
 
 @app.route('/login')
 def login():
-    return github.authorize(callback=url_for('authorized', _external=True, _scheme='http'))#set this back https
+    return github.authorize(callback=url_for('authorized', _external=True, _scheme='https'))
 
 @app.route('/logout')
 def logout():
@@ -59,8 +58,7 @@ def authorized():
             #save user data and set log in message
             session['github_token'] = (resp['access_token'], '')
             session['user_data'] = github.get('user').data
-            secret = "Secret message"
-            return render_template('secret.html', secret = secret)
+            message = "You were successfully logged in as " + session['user_data']['login'] + '.'
         except Exception as inst:
             #clear the session and give error message
             session.clear()
