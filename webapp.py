@@ -25,7 +25,6 @@ github = oauth.remote_app(
     authorize_url='https://github.com/login/oauth/authorize' #URL for github's OAuth login
 )
 
-
 @app.context_processor
 def inject_logged_in():
     return {"logged_in":('github_token' in session)}
@@ -58,13 +57,16 @@ def authorized():
             #save user data and set log in message
             session['github_token'] = (resp['access_token'], '')
             session['user_data'] = github.get('user').data
-            message = "You were successfully logged in as " + session['user_data']['login'] + '.'
+            if github.get('user').data['location'] == 'Santa Barbara':
+                message = "You were successfully logged in as " + session['user_data']['login'] + '.'
+            else:
+                session.clear()
+                message = "You don't fill the requirements to log in."
         except Exception as inst:
             #clear the session and give error message
             session.clear()
             print(inst)
             message = "Unable to log in. Please try again."
-            secret = ''
     return render_template('home.html', message=message)
     
 @github.tokengetter
